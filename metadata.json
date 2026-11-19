@@ -1,0 +1,6 @@
+{
+  "name": "Velmap",
+  "description": "Visual workspace for organizing ideas, boards, notes, tasks, links, and documents on an infinite canvas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Velmap</title>
+    <meta name="description" content="Visual workspace for organizing ideas, boards, notes, tasks, links, and documents on an infinite canvas." />
+    <meta property="og:title" content="Velmap" />
+    <meta property="og:description" content="Visual workspace for organizing ideas, boards, notes, tasks, links, and documents on an infinite canvas." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#18181b" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Velmap" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" id="velmap-favicon" href="/favicon.ico">
+    <link rel="stylesheet" href="./css/tailwind.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body class="w-screen h-[100dvh] flex flex-col overflow-hidden relative">
+
+    <!-- TOP BAR -->
+    <header class="h-11 md:h-12 w-full max-w-full bg-[#18181b]/95 backdrop-blur-md border-b border-white/[0.06] flex items-center justify-between px-2.5 md:px-3.5 gap-2 z-30 shrink-0">
+        <div class="flex items-center space-x-1 md:space-x-2 min-w-0 flex-1">
+            <div class="flex items-center space-x-1 md:space-x-1.5 text-zinc-400 font-medium text-xs min-w-0 flex-1">
+                <button type="button" id="topbar-home-btn" onclick="closeMobileSheets(); toggleHomeView()" class="flex items-center space-x-1.5 md:space-x-2 p-1 md:px-1.5 md:py-1 rounded-lg hover:bg-white/[0.06] text-zinc-200 transition-colors shrink-0 cursor-pointer" title="Velmap Home" data-i18n-title="velmapHomeTitle">
+                    <div class="w-6 h-6 rounded-md bg-white/[0.06] border border-white/[0.08] flex items-center justify-center shrink-0 overflow-hidden">
+                        <img src="/favicon.ico" alt="Velmap" data-velmap-logo="true" class="velmap-logo-img w-full h-full object-cover pointer-events-none" onerror="this.style.opacity='0.35'" />
+                    </div>
+                    <span class="hidden md:inline text-xs font-semibold tracking-tight text-zinc-100 shrink-0">Velmap</span>
+                </button>
+                <span class="hidden md:inline text-zinc-600 shrink-0">/</span>
+                <div class="flex items-center space-x-0.5 shrink-0">
+                    <button type="button" id="nav-back-btn" onclick="navigateHistoryBack()" disabled class="p-1.5 md:p-1 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors" title="Go back" data-i18n-title="goBack">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button type="button" id="nav-forward-btn" onclick="navigateHistoryForward()" disabled class="p-1.5 md:p-1 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] disabled:opacity-30 disabled:pointer-events-none transition-colors" title="Go forward" data-i18n-title="goForward">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                </div>
+                <div id="breadcrumb-container" class="flex items-center space-x-1 md:space-x-1.5 min-w-0 flex-1 overflow-x-auto no-scrollbar py-1 px-0.5"></div>
+            </div>
+        </div>
+
+        <div class="hidden md:flex items-center shrink-0">
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                    <svg class="w-3.5 h-3.5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </span>
+                <input type="text" id="search-input" placeholder="Search..." data-i18n-placeholder="searchPlaceholder" class="bg-white/[0.03] hover:bg-white/[0.04] focus:bg-[#141416] text-xs text-zinc-200 pl-8 pr-3 py-1.5 rounded-lg border border-white/[0.06] focus:outline-none focus:border-white/20 w-44 lg:w-60 focus:w-52 lg:focus:w-64 transition-all placeholder-zinc-500">
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-1 md:space-x-1.5 shrink-0">
+            <button type="button" id="mobile-search-btn" onclick="toggleMobileSearchBar()" class="md:hidden w-9 h-9 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] text-zinc-300 transition-colors flex items-center justify-center relative" title="Search board" data-i18n-title="mobileSearchToggleTitle">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span id="mobile-search-active-dot" class="hidden absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            </button>
+            <div class="hidden md:flex text-[11px] text-zinc-400 bg-white/[0.03] px-1.5 py-1 rounded-lg border border-white/[0.06] items-center space-x-1">
+                <button type="button" id="zoom-level" onclick="resetZoom()" class="w-9 text-center font-medium text-zinc-300 hover:text-white transition-colors" title="Reset Zoom" data-i18n-title="resetZoom">100%</button>
+                <div class="hidden lg:flex items-center space-x-0.5 border-l border-white/[0.06] pl-1">
+                    <button type="button" onclick="zoomOut()" class="hover:text-zinc-100 hover:bg-white/[0.06] rounded p-1 transition-colors" title="Zoom Out" data-i18n-title="zoomOut">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                    <button type="button" onclick="resetZoom()" class="hover:text-zinc-100 hover:bg-white/[0.06] rounded p-1 transition-colors" title="Reset Zoom" data-i18n-title="resetZoom">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                    </button>
+                    <button type="button" onclick="zoomIn()" class="hover:text-zinc-100 hover:bg-white/[0.06] rounded p-1 transition-colors" title="Zoom In" data-i18n-title="zoomIn">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <button type="button" id="unsorted-toggle-btn" onclick="toggleSidebar()" class="hidden md:flex px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-zinc-300 hover:bg-white/[0.07] transition-all items-center space-x-1.5 text-xs font-medium" title="Toggle Unsorted Drawer" data-i18n-title="toggleUnsorted">
+                <svg class="w-3.5 h-3.5 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M15 3v18" />
+                </svg>
+                <span class="hidden lg:inline" data-i18n="unsorted">Unsorted</span>
+                <span id="unsorted-count" class="bg-white/[0.08] text-zinc-200 text-[10px] px-1.5 py-[1px] rounded-full">0</span>
+            </button>
+            <button type="button" id="header-export-btn" onclick="closeMobileSheets(); toggleExportPopover(event)" class="h-9 md:h-auto px-2.5 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] text-zinc-300 transition-colors flex items-center space-x-1 text-xs font-medium" title="Export board, document, or assets" data-i18n-title="exportBtnTitle">
+                <svg class="w-4 h-4 md:w-3.5 md:h-3.5 text-zinc-300 md:text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span class="hidden md:inline" data-i18n="exportBtnLabel">Export</span>
+                <svg class="hidden sm:block w-3 h-3 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <button type="button" id="header-sync-btn" onclick="openSyncModal()" class="hidden md:flex px-2.5 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] text-zinc-300 transition-colors items-center space-x-1.5 text-xs font-medium" title="Device-to-Device Sync (No Server)" data-i18n-title="headerSyncTitle">
+                <span id="header-sync-dot" class="w-2 h-2 rounded-full bg-zinc-500 shrink-0"></span>
+                <span class="hidden lg:inline" data-i18n="syncBtn">Sync</span>
+            </button>
+            <button type="button" id="header-pwa-install-btn" onclick="triggerPwaInstall()" class="hidden px-2.5 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.12] text-zinc-100 transition-colors items-center space-x-1 text-xs font-medium" title="Install Velmap as an app" data-i18n-title="pwaInstallTitle">
+                <svg class="w-3.5 h-3.5 text-zinc-200 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2"></rect>
+                    <line x1="12" y1="7" x2="12" y2="14"></line>
+                    <polyline points="9 11 12 14 15 11"></polyline>
+                </svg>
+                <span class="hidden xl:inline" data-i18n="pwaInstallBtn">Install</span>
+            </button>
+            <button type="button" id="header-profile-btn" onclick="closeMobileSheets(); openSettingsModal()" class="w-9 h-9 md:w-auto md:h-auto p-1 md:pl-1 md:pr-2 md:py-1 rounded-lg bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] transition-colors flex items-center justify-center md:space-x-2" title="Profile & Settings" data-i18n-title="headerProfileTitle">
+                <span id="header-user-avatar" class="w-6 h-6 rounded-full text-[10px] font-semibold text-white flex items-center justify-center shrink-0 overflow-hidden transition-all" style="background-color:#4f6b8a; box-shadow: 0 0 0 1.5px #4f6b8a;">U</span>
+                <span id="header-user-name" class="hidden xl:inline text-xs font-medium text-zinc-300 max-w-[100px] truncate">Workspace</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- FLOATING MOBILE SEARCH CARD -->
+    <div id="mobile-search-bar" class="hidden md:hidden fixed top-[50px] left-2.5 right-2.5 z-40 bg-[#1c1c20]/95 backdrop-blur-md border border-white/[0.12] rounded-2xl px-3 py-1.5 shadow-2xl items-center gap-2">
+        <svg class="w-4 h-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="mobile-search-input" placeholder="Search..." data-i18n-placeholder="searchPlaceholder" class="flex-1 min-w-0 bg-transparent text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none py-1.5">
+        <button type="button" id="mobile-search-clear-btn" onclick="clearMobileSearch()" class="hidden px-2 py-1 rounded-lg text-[11px] font-medium text-zinc-300 bg-white/[0.06] hover:bg-white/[0.12]" data-i18n="mobileClearSearch">Clear</button>
+        <button type="button" onclick="toggleMobileSearchBar(false)" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.08]">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="flex-1 flex relative overflow-hidden">
+
+        <!-- LEFT TOOLBAR (Desktop Sidebar / Mobile Floating Contextual Bar when Subboard or Line selected) -->
+        <aside id="left-toolbar" class="hidden md:flex md:w-16 bg-[#17171a]/95 border-r border-white/[0.06] flex-col items-center py-2.5 z-20 shrink-0 relative">
+            
+            <!-- DEFAULT TOOLS (Visível quando nada ou múltiplos itens estão selecionados) -->
+            <div id="default-toolbar" class="flex flex-col items-center space-y-1 w-full overflow-y-auto pb-20 sm:pb-24 px-1 sm:px-1.5">
+                <button type="button" onclick="setTool('select')" id="tool-select" class="w-full py-1.5 rounded-lg bg-white/10 text-zinc-100 hover:bg-white/15 transition-all border border-white/10 flex flex-col items-center" title="Select (Marquee Drag)" data-i18n-title="toolSelectTitle">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path>
+                        <path d="M13 13l6 6"></path>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 font-medium" data-i18n="toolSelect">Select</span>
+                </button>
+                <button type="button" onclick="setTool('hand')" id="tool-hand" class="w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Hand Tool (Pan Canvas)" data-i18n-title="toolHandTitle">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                        <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+                        <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+                        <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 font-medium" data-i18n="toolHand">Hand</span>
+                </button>
+                <div class="w-6 sm:w-8 h-[1px] bg-white/[0.06] my-1 shrink-0"></div>
+                
+                <div data-tool-type="sticky" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Note (Click or Drag)" data-i18n-title="toolNoteTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolNote">Note</span>
+                </div>
+                <div data-tool-type="link" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Link (Click or Drag)" data-i18n-title="toolLinkTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolLink">Link</span>
+                </div>
+                <div data-tool-type="task" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Todo List (Click or Drag)" data-i18n-title="toolTodoTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <polyline points="9 11 12 14 22 4"></polyline>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolTodo">To-do</span>
+                </div>
+                <div data-tool-type="subboard" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Board (Click or Drag)" data-i18n-title="toolBoardTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolBoard">Board</span>
+                </div>
+                <div data-tool-type="column" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Column (Click or Drag)" data-i18n-title="toolColumnTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolColumn">Column</span>
+                </div>
+                <div data-tool-type="document" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Document (Click or Drag)" data-i18n-title="toolDocTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolDoc">Doc</span>
+                </div>
+                <div data-tool-type="comment" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Comment (Click or Drag)" data-i18n-title="toolCommentTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolComment">Comment</span>
+                </div>
+                <div data-tool-type="table" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Table (Click or Drag)" data-i18n-title="toolTableTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="3" y1="15" x2="21" y2="15"></line>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                        <line x1="15" y1="3" x2="15" y2="21"></line>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolTable">Table</span>
+                </div>
+                <button type="button" onclick="setTool(activeTool === 'line' ? 'select' : 'line')" id="tool-line" class="w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Line (Connect Cards)" data-i18n-title="toolLineTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <line x1="5" y1="19" x2="19" y2="5"></line>
+                        <polyline points="11 5 19 5 19 13"></polyline>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolLine">Line</span>
+                </button>
+                <button type="button" data-tool-type="image" class="tool-drag-item select-none w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-all border border-transparent flex flex-col items-center" title="Click to upload or drag image file" data-i18n-title="toolImageTitle">
+                    <svg class="w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1 pointer-events-none" data-i18n="toolImage">Image</span>
+                </button>
+                <div class="flex-1"></div>
+            </div>
+
+            <!-- CONNECTION TOOLBAR (Só aparece quando 1 linha está selecionada) -->
+            <div id="connection-toolbar" class="hidden flex-col items-center space-y-3 w-full pt-1 overflow-y-auto pb-20 sm:pb-24 px-1 sm:px-1.5">
+                <button type="button" onclick="clearConnectionSelection()" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-2" title="Deselect" data-i18n-title="deselect">
+                    <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                
+                <!-- Color Palette (Mini) -->
+                <div class="flex flex-col items-center w-full">
+                    <div class="flex flex-wrap justify-center gap-1.5 mb-1 px-2">
+                        <button onclick="setConnColor('#71717a')" class="w-5 h-5 rounded-full bg-[#71717a] border border-zinc-600 hover:scale-110 transition-transform" title="Gray" data-i18n-title="colorGray"></button>
+                        <button onclick="setConnColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-zinc-600 hover:scale-110 transition-transform" title="White" data-i18n-title="colorWhite"></button>
+                        <button onclick="setConnColor('#ef4444')" class="w-5 h-5 rounded-full bg-red-500 border border-zinc-600 hover:scale-110 transition-transform" title="Red" data-i18n-title="colorRed"></button>
+                        <button onclick="setConnColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500 border border-zinc-600 hover:scale-110 transition-transform" title="Blue" data-i18n-title="colorBlue"></button>
+                        <button onclick="setConnColor('#10b981')" class="w-5 h-5 rounded-full bg-emerald-500 border border-zinc-600 hover:scale-110 transition-transform" title="Green" data-i18n-title="colorGreen"></button>
+                        <button onclick="setConnColor('#eab308')" class="w-5 h-5 rounded-full bg-yellow-500 border border-zinc-600 hover:scale-110 transition-transform" title="Yellow" data-i18n-title="colorYellow"></button>
+                    </div>
+                    <span class="text-[10px] text-zinc-400" data-i18n="colorLabel">Color</span>
+                </div>
+
+                <button type="button" onclick="toggleStartMarker()" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-1" title="Toggle Start Marker" data-i18n-title="toggleStartMarker">
+                    <div class="w-6 h-6 rounded-[4px] bg-zinc-800/70 mb-1 flex items-center justify-center border border-white/10 text-zinc-500 transition-all" id="btn-start-marker">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    </div>
+                    <span class="text-[10px]" data-i18n="connStart">Start</span>
+                </button>
+                
+                <button type="button" onclick="toggleEndMarker()" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-1" title="Toggle End Marker" data-i18n-title="toggleEndMarker">
+                    <div class="w-6 h-6 rounded-[4px] bg-white/10 mb-1 flex items-center justify-center border border-white/80 text-white transition-all" id="btn-end-marker">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </div>
+                    <span class="text-[10px]" data-i18n="connEnd">End</span>
+                </button>
+
+                <button type="button" onclick="promptConnLabel()" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-1" title="Label" data-i18n-title="connLabel">
+                    <div class="w-6 h-6 rounded-[2px] bg-zinc-800 mb-1 flex items-center justify-center border border-zinc-600 text-xs font-bold font-serif" id="btn-conn-label">T</div>
+                    <span class="text-[10px]" data-i18n="connLabel">Label</span>
+                </button>
+
+                <button type="button" onclick="toggleConnectionDashed()" id="btn-conn-dashed" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-1">
+                    <div class="w-6 h-6 rounded-[2px] bg-zinc-800 mb-1 flex items-center justify-center border border-zinc-600">
+                        <div class="w-4 border-b-2 border-dashed border-zinc-400"></div>
+                    </div>
+                    <span class="text-[10px]" data-i18n="connDashed">Dashed</span>
+                </button>
+
+                <button type="button" onclick="cycleConnWeight()" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-1" title="Weight" data-i18n-title="connWeight">
+                    <div class="w-6 h-6 rounded-[2px] bg-zinc-800 mb-1 flex items-center justify-center border border-zinc-600" id="btn-conn-weight">
+                        <div class="w-4 border-b-2 border-zinc-400"></div>
+                    </div>
+                    <span class="text-[10px]" data-i18n="connWeight">Weight</span>
+                </button>
+            </div>
+
+            <!-- CONTEXTUAL TOOLBAR (Só aparece quando 1 Sub-board está selecionado) -->
+            <div id="contextual-toolbar" class="hidden flex-col items-center space-y-5 w-full pt-1 overflow-y-auto pb-20 sm:pb-24 px-1 sm:px-1.5">
+                <!-- Back -->
+                <button type="button" onclick="clearSelection()" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-2" title="Back" data-i18n-title="back">
+                    <svg class="w-5 h-5 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                
+                <!-- Paleta de Cores do Board -->
+                <div class="w-full flex flex-col items-center">
+                    <div class="flex flex-wrap justify-center gap-1.5 mb-1.5 px-2">
+                        <button onclick="setBoardColor('#78787a')" class="w-6 h-6 rounded-md bg-[#78787a] border border-zinc-600 hover:scale-110 transition-transform" title="Gray" data-i18n-title="colorGray"></button>
+                        <button onclick="setBoardColor('#4f6b8a')" class="w-6 h-6 rounded-md bg-[#4f6b8a] border border-zinc-600 hover:scale-110 transition-transform" title="Blue" data-i18n-title="colorBlue"></button>
+                        <button onclick="setBoardColor('#8a4f4f')" class="w-6 h-6 rounded-md bg-[#8a4f4f] border border-zinc-600 hover:scale-110 transition-transform" title="Red" data-i18n-title="colorRed"></button>
+                        <button onclick="setBoardColor('#4f8a5f')" class="w-6 h-6 rounded-md bg-[#4f8a5f] border border-zinc-600 hover:scale-110 transition-transform" title="Green" data-i18n-title="colorGreen"></button>
+                        <button onclick="setBoardColor('#8a7d4f')" class="w-6 h-6 rounded-md bg-[#8a7d4f] border border-zinc-600 hover:scale-110 transition-transform" title="Yellow" data-i18n-title="colorYellow"></button>
+                    </div>
+                    <span class="text-[10px] text-zinc-400" data-i18n="colorLabel">Color</span>
+                </div>
+
+                <!-- Ícone do Board -->
+                <button type="button" onclick="openIconPicker(event)" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-1" title="Icon" data-i18n-title="iconLabel">
+                    <div class="w-7 h-7 rounded-md bg-zinc-800 mb-1 flex items-center justify-center border border-zinc-600 overflow-hidden" id="btn-board-icon">
+                        <!-- Injetado via JS -->
+                    </div>
+                    <span class="text-[10px]" data-i18n="iconLabel">Icon</span>
+                </button>
+
+                <button type="button" onclick="focusSelectedBoardTitle()" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-1" title="Rename" data-i18n-title="rename">
+                    <div class="w-7 h-7 rounded-md bg-zinc-800 mb-1 flex items-center justify-center border border-zinc-600">
+                        <span class="text-xs font-bold text-zinc-300">A|</span>
+                    </div>
+                    <span class="text-[10px]" data-i18n="rename">Rename</span>
+                </button>
+
+                <button type="button" onclick="openSelectedBoardMoreMenu(event)" class="w-full flex flex-col items-center text-zinc-400 hover:text-zinc-100 transition-colors py-1" title="More" data-i18n-title="more">
+                    <div class="w-7 h-7 rounded-md bg-zinc-800 mb-1 flex items-center justify-center border border-zinc-600">
+                        <span class="text-xs font-bold text-zinc-300">...</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- AÇÕES FIXAS EMBAIXO (Configurações e Lixeira) -->
+            <div id="global-trash-container" class="absolute bottom-2.5 left-0 right-0 flex flex-col items-center space-y-1 bg-[#17171a]/95 pt-1.5 px-1 sm:px-1.5 border-t border-white/[0.04]">
+                <button type="button" onclick="openSettingsModal()" class="w-full py-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-colors border border-transparent flex flex-col items-center" title="Settings & Storage" data-i18n-title="settingsTitle">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1" data-i18n="settings">Settings</span>
+                </button>
+                <button type="button" id="global-trash-btn" onclick="handleGlobalTrashClick()" class="w-full py-1.5 rounded-lg text-zinc-400 btn-delete-hover border border-transparent relative flex flex-col items-center" title="Trash & Garbage Collector" data-i18n-title="trashTitle">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    <span class="hidden sm:block text-[9.5px] leading-none mt-1" data-i18n="trash">Trash</span>
+                    <span id="trash-badge" class="absolute top-0.5 right-1 sm:right-2 bg-zinc-700 text-zinc-100 text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-semibold hidden">0</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- INFINITE CANVAS -->
+        <main id="canvas-viewport" class="flex-1 relative overflow-hidden dot-grid cursor-default">
+            <div id="canvas-content" class="absolute top-0 left-0 w-[10000px] h-[10000px] pointer-events-none">
+                <!-- SVG Layer para conexões -->
+                <svg id="connections-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0 overflow-visible"></svg>
+            </div>
+
+            <!-- Marquee Selection Box -->
+            <div id="marquee-box" class="absolute border border-zinc-400 bg-zinc-400/10 pointer-events-none hidden z-40"></div>
+
+            <!-- Drop Overlay -->
+            <div id="drop-overlay" class="absolute inset-3 border-2 border-dashed border-zinc-500 bg-panel/80 backdrop-blur-xs rounded-xl z-50 flex flex-col items-center justify-center pointer-events-none hidden">
+                <svg class="w-10 h-10 text-zinc-300 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p class="text-sm font-medium text-zinc-200" data-i18n="dropImagesHere">Drop images here</p>
+            </div>
+
+            <div id="empty-canvas-prompt" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-35 select-none px-4 text-center">
+                <div class="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mb-3">
+                    <svg class="w-5 h-5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <line x1="12" y1="8" x2="12" y2="16"></line>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                </div>
+                <p class="text-xs font-medium text-zinc-400" data-i18n="emptyCanvasPrompt">Right-click or long-press anywhere, or tap/drag a tool from the left</p>
+            </div>
+        </main>
+
+        <!-- MOBILE SIDEBAR BACKDROP -->
+        <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-[35] md:hidden hidden"></div>
+
+        <!-- RIGHT DRAWER ("Unsorted") — Floating Card Sheet on Mobile / Sidebar on Desktop -->
+        <aside id="right-sidebar" class="hidden fixed left-2.5 right-2.5 bottom-[64px] max-h-[58dvh] bg-[#18181b]/95 backdrop-blur-md border border-white/[0.12] rounded-2xl flex flex-col z-40 shrink-0 transition-all duration-200 overflow-hidden shadow-2xl md:relative md:inset-auto md:bottom-auto md:left-auto md:right-auto md:w-80 md:max-h-none md:rounded-none md:border-y-0 md:border-r-0 md:border-l md:border-white/[0.06] md:shadow-none md:z-20">
+            <div class="md:hidden flex justify-center pt-2 pb-0.5 shrink-0">
+                <span class="w-10 h-1 rounded-full bg-white/20"></span>
+            </div>
+            <div class="h-10 md:h-11 border-b border-white/[0.06] flex items-center justify-between px-3.5 shrink-0">
+                <span class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400" data-i18n="unsorted">Unsorted</span>
+                <button type="button" onclick="toggleSidebar()" class="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors" title="Close Drawer" data-i18n-title="closeDrawer">
+                    <svg class="w-4 h-4 md:w-3.5 md:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="p-3 border-b border-white/[0.06]">
+                <form id="quick-capture-form" class="flex gap-2" onsubmit="quickCaptureSubmit(event)">
+                    <input type="text" id="quick-input" placeholder="Quick note or URL..." data-i18n-placeholder="quickInputPlaceholder" class="flex-1 min-w-0 bg-white/[0.03] text-xs text-zinc-200 px-2.5 py-2 md:py-1.5 rounded-lg border border-white/[0.06] focus:outline-none focus:border-white/20 placeholder-zinc-500">
+                    <button type="submit" class="bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 px-3 py-2 md:py-1.5 rounded-lg text-xs font-medium border border-white/[0.06] transition-colors shrink-0" data-i18n="add">Add</button>
+                </form>
+            </div>
+
+            <div id="unsorted-list" class="flex-1 overflow-y-auto p-3 space-y-2.5"></div>
+        </aside>
+
+        <!-- HOME VIEW (MIRO-STYLE WORKSPACE HOME) -->
+        <section id="home-view" class="hidden absolute inset-0 z-40 bg-[#131316]/98 backdrop-blur-md overflow-y-auto">
+            <div class="max-w-5xl mx-auto px-4 sm:px-8 py-6 sm:py-9 space-y-8">
+                <!-- App Brand + User Profile Banner -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.06]">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-white/[0.06] border border-white/[0.1] flex items-center justify-center shrink-0 shadow-lg overflow-hidden">
+                            <img src="/favicon.ico" alt="Velmap" data-velmap-logo="true" class="velmap-logo-img w-full h-full object-cover pointer-events-none" onerror="this.style.opacity='0.35'" />
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-lg font-semibold tracking-tight text-zinc-100">Velmap</h1>
+                                <span class="text-[10px] uppercase tracking-wider font-medium text-zinc-500 border border-white/[0.08] rounded px-1.5 py-0.5" data-i18n="localWorkspaceTag">Local Workspace</span>
+                            </div>
+                            <p class="text-xs text-zinc-400 mt-0.5" data-i18n="homeSubtitle">Organize ideas, visual boards, notes, and documents in spaces.</p>
+                        </div>
+                    </div>
+
+                    <!-- User Profile Card -->
+                    <div id="home-profile-card" class="flex items-center gap-3 bg-[#1c1c20] border border-white/[0.07] rounded-xl px-3.5 py-2.5 shrink-0 transition-colors">
+                        <div id="home-user-avatar" class="w-9 h-9 rounded-full text-xs font-semibold text-white flex items-center justify-center shrink-0 overflow-hidden transition-all" style="background-color:#4f6b8a; box-shadow: 0 0 0 2px #1c1c20, 0 0 0 4px #4f6b8a;">U</div>
+                        <div class="min-w-0 pr-2">
+                            <div id="home-user-name" class="text-xs font-semibold text-zinc-100 truncate max-w-[140px]">Workspace</div>
+                            <div id="home-user-stats" class="text-[11px] text-zinc-500 truncate">0 areas</div>
+                        </div>
+                        <div class="flex items-center gap-1.5 border-l border-white/[0.06] pl-2.5">
+                            <button type="button" onclick="openSettingsModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] transition-colors" title="Profile & Settings" data-i18n-title="headerProfileTitle">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                            </button>
+                            <button type="button" onclick="closeHomeView()" class="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-white/[0.07] hover:bg-white/[0.12] text-zinc-100 border border-white/[0.08] transition-colors" data-i18n="returnToCanvas">Open Canvas</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create New Area (Miro-style Templates) -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400" data-i18n="createNewArea">Create new area</h2>
+                    </div>
+                    <div id="home-templates-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <button type="button" onclick="createNewArea('blank')" class="group text-left bg-[#1a1a1e] hover:bg-[#222227] border border-white/[0.07] hover:border-white/[0.18] rounded-xl p-3.5 transition-all flex flex-col gap-3">
+                            <div class="h-20 rounded-lg bg-[#131316] border border-dashed border-white/[0.1] group-hover:border-white/[0.25] flex items-center justify-center transition-colors">
+                                <svg class="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-zinc-100" data-i18n="tplBlankTitle">Blank Area</div>
+                                <div class="text-[11px] text-zinc-500 mt-0.5 line-clamp-1" data-i18n="tplBlankDesc">Fresh empty infinite canvas</div>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="createNewArea('moodboard')" class="group text-left bg-[#1a1a1e] hover:bg-[#222227] border border-white/[0.07] hover:border-white/[0.18] rounded-xl p-3.5 transition-all flex flex-col gap-3">
+                            <div class="h-20 rounded-lg bg-[#131316] border border-white/[0.06] flex items-center justify-center">
+                                <svg class="w-8 h-8 text-zinc-400 group-hover:text-zinc-100 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                                    <rect x="3" y="3" width="8" height="9" rx="1.5"></rect>
+                                    <rect x="13" y="3" width="8" height="5" rx="1.5"></rect>
+                                    <rect x="13" y="10" width="8" height="11" rx="1.5"></rect>
+                                    <rect x="3" y="14" width="8" height="7" rx="1.5"></rect>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-zinc-100" data-i18n="tplMoodboardTitle">Moodboard</div>
+                                <div class="text-[11px] text-zinc-500 mt-0.5 line-clamp-1" data-i18n="tplMoodboardDesc">Visual references & palette notes</div>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="createNewArea('project')" class="group text-left bg-[#1a1a1e] hover:bg-[#222227] border border-white/[0.07] hover:border-white/[0.18] rounded-xl p-3.5 transition-all flex flex-col gap-3">
+                            <div class="h-20 rounded-lg bg-[#131316] border border-white/[0.06] flex items-center justify-center">
+                                <svg class="w-8 h-8 text-zinc-400 group-hover:text-zinc-100 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                                    <rect x="3" y="4" width="7" height="16" rx="1.5"></rect>
+                                    <rect x="14" y="4" width="7" height="7" rx="1.5"></rect>
+                                    <path d="M14 15h7M14 19h5"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-zinc-100" data-i18n="tplProjectTitle">Project Hub</div>
+                                <div class="text-[11px] text-zinc-500 mt-0.5 line-clamp-1" data-i18n="tplProjectDesc">Tasks, brief doc & goals</div>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="createNewArea('brainstorm')" class="group text-left bg-[#1a1a1e] hover:bg-[#222227] border border-white/[0.07] hover:border-white/[0.18] rounded-xl p-3.5 transition-all flex flex-col gap-3">
+                            <div class="h-20 rounded-lg bg-[#131316] border border-white/[0.06] flex items-center justify-center">
+                                <svg class="w-8 h-8 text-zinc-400 group-hover:text-zinc-100 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <circle cx="5" cy="6" r="2"></circle>
+                                    <circle cx="19" cy="6" r="2"></circle>
+                                    <circle cx="5" cy="18" r="2"></circle>
+                                    <circle cx="19" cy="18" r="2"></circle>
+                                    <path d="M9.8 10.2L6.6 7.4M14.2 10.2l3.2-2.8M9.8 13.8l-3.2 2.8M14.2 13.8l3.2 2.8"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold text-zinc-100" data-i18n="tplBrainstormTitle">Mindmap</div>
+                                <div class="text-[11px] text-zinc-500 mt-0.5 line-clamp-1" data-i18n="tplBrainstormDesc">Connected topic nodes</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Your Areas & Boards -->
+                <div class="space-y-3 pb-8">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-400" data-i18n="yourAreasTitle">Your Areas &amp; Boards</h2>
+                        <button type="button" onclick="createNewArea('blank')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-zinc-100 hover:bg-white text-zinc-900 transition-colors flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span data-i18n="newAreaBtn">New Area</span>
+                        </button>
+                    </div>
+                    <div id="home-areas-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ELEVATED DRAG LAYER FOR ACTUAL CANVAS CARDS (Renders above Toolbar / Topbar / Unsorted when dragged onto bars) -->
+    <div id="canvas-drag-overlay" class="fixed inset-0 pointer-events-none z-[9500] overflow-visible hidden">
+        <div id="canvas-drag-overlay-world" class="absolute top-0 left-0 w-[10000px] h-[10000px] pointer-events-none" style="transform-origin: 0 0;"></div>
+    </div>
+
+    <!-- FLOATING DRAG GHOST (Used for Toolbar / Unsorted / Trash / Task physics dragging) -->
+    <div id="floating-drag-ghost" class="fixed pointer-events-none z-[9999] hidden"></div>
+
+    <!-- MENU DE CONTEXTO (CLIQUE DIREITO) -->
+    <div id="context-menu" class="context-menu">
+        <!-- Injetado via JS -->
+    </div>
+
+    <!-- TRASH MODAL -->
+    <div id="trash-modal" class="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 flex items-center justify-center hidden p-2.5 sm:p-4 transition-opacity duration-150">
+        <div class="bg-[#18181b] border border-white/[0.08] rounded-xl w-full max-w-[500px] h-[85dvh] sm:h-[80vh] flex flex-col card-shadow overflow-hidden">
+            <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-white/[0.06] flex items-center justify-between shrink-0">
+                <h3 class="font-medium text-sm text-zinc-200" data-i18n="trash">Trash</h3>
+                <button type="button" onclick="closeTrashModal()" class="text-zinc-400 hover:text-zinc-200 p-1 rounded-md hover:bg-white/[0.06] transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div id="trash-list" class="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-6"></div>
+            
+            <div class="p-3.5 sm:p-4 border-t border-white/[0.06] shrink-0">
+                <button type="button" onclick="emptyTrash()" class="w-full bg-white/[0.05] hover:bg-white/[0.09] text-zinc-300 text-xs py-2.5 rounded-lg border border-white/[0.06] transition-colors font-medium" data-i18n="emptyTrashBtn">Empty trash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ICON PICKER POPOVER -->
+    <div id="icon-picker-popover" class="fixed hidden bg-[#222226] border border-borderSubtle rounded-xl shadow-2xl z-[100] p-3 w-[240px] max-w-[calc(100vw-16px)] max-h-[calc(100dvh-64px)] overflow-y-auto">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-zinc-300" data-i18n="chooseIcon">Choose Icon</span>
+            <button type="button" onclick="document.getElementById('icon-picker-popover').classList.add('hidden')" class="text-zinc-500 hover:text-zinc-300"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        <div class="grid grid-cols-4 gap-2 mb-3" id="icon-picker-grid">
+            <!-- Injetado via JS -->
+        </div>
+        <div class="border-t border-borderSubtle pt-2 flex flex-col gap-2">
+            <button type="button" onclick="triggerIconUpload()" class="w-full text-left text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-2 p-1.5 rounded hover:bg-[#2a2a2f]"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span data-i18n="uploadImage">Upload Image</span></button>
+            <button type="button" onclick="promptIconUrl()" class="w-full text-left text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-2 p-1.5 rounded hover:bg-[#2a2a2f]"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><span data-i18n="useUrl">Use URL</span></button>
+            <button type="button" onclick="removeBoardIcon()" class="w-full text-left text-xs text-red-400 hover:text-red-300 flex items-center gap-2 p-1.5 rounded hover:bg-[#2a2a2f]"><svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span data-i18n="removeIcon">Remove Icon</span></button>
+        </div>
+    </div>
+
+    <!-- BOARD BACKGROUND POPOVER -->
+    <div id="board-bg-popover" class="fixed hidden bg-[#1e1e23] border border-white/[0.1] rounded-xl shadow-2xl z-[120] p-3.5 w-[264px] max-w-[calc(100vw-16px)] max-h-[calc(100dvh-64px)] overflow-y-auto">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-zinc-200" data-i18n="boardBgTitle">Board Background</span>
+            <button type="button" onclick="closeBoardBgPopover()" class="text-zinc-500 hover:text-zinc-200 p-0.5 rounded"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        <div class="space-y-3">
+            <div>
+                <div class="text-[10.5px] font-medium text-zinc-400 mb-1.5" data-i18n="bgColorLabel">Color</div>
+                <div id="board-bg-swatches" class="flex items-center flex-wrap gap-2"></div>
+            </div>
+            <div class="border-t border-white/[0.06] pt-2.5">
+                <div class="text-[10.5px] font-medium text-zinc-400 mb-1.5" data-i18n="bgPatternLabel">Pattern</div>
+                <div id="board-bg-patterns" class="grid grid-cols-3 gap-1.5">
+                    <button type="button" data-bg-pattern="dots" onclick="setBoardBgPattern('dots')" class="px-2 py-1.5 rounded-lg text-[11px] font-medium border transition-colors" data-i18n="patternDots">Dots</button>
+                    <button type="button" data-bg-pattern="grid" onclick="setBoardBgPattern('grid')" class="px-2 py-1.5 rounded-lg text-[11px] font-medium border transition-colors" data-i18n="patternGrid">Grid</button>
+                    <button type="button" data-bg-pattern="solid" onclick="setBoardBgPattern('solid')" class="px-2 py-1.5 rounded-lg text-[11px] font-medium border transition-colors" data-i18n="patternSolid">Solid</button>
+                </div>
+            </div>
+            <button type="button" onclick="resetBoardBackground()" class="w-full py-1.5 rounded-lg text-[11px] text-zinc-400 hover:text-zinc-100 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-colors" data-i18n="resetBackground">Reset to Default</button>
+        </div>
+    </div>
+
+    <!-- EXPORT POPOVER (MILANOTE STYLE) -->
+    <div id="export-popover" class="fixed hidden bg-[#1d1d20] border border-white/[0.09] rounded-xl shadow-2xl z-[130] w-[280px] max-w-[calc(100vw-16px)] max-h-[calc(100dvh-64px)] overflow-y-auto py-2 backdrop-blur-md">
+        <!-- Section 1: Current Board Layout -->
+        <div class="pb-2">
+            <div class="px-3.5 py-1.5 text-[12.5px] font-semibold text-zinc-100" data-i18n="exportLayoutSection">Export the current board layout</div>
+            <button type="button" onclick="exportCurrentBoardPdf('standard')" class="export-menu-item">
+                <svg class="w-4 h-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <rect x="6" y="13" width="6" height="4" rx="0.5" fill="#ef4444" stroke="none"></rect>
+                </svg>
+                <span class="truncate" data-i18n="exportPdfStandard">PDF standard (small file size)</span>
+            </button>
+            <button type="button" onclick="exportCurrentBoardPdf('high')" class="export-menu-item">
+                <svg class="w-4 h-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <rect x="6" y="13" width="6" height="4" rx="0.5" fill="#ef4444" stroke="none"></rect>
+                </svg>
+                <span class="truncate" data-i18n="exportPdfHigh">PDF high quality (large file size)</span>
+            </button>
+            <button type="button" onclick="exportCurrentBoardPng()" class="export-menu-item">
+                <svg class="w-4 h-4 shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5" fill="#eab308" stroke="none"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span class="truncate" data-i18n="exportPngImage">PNG image</span>
+            </button>
+        </div>
+
+        <div class="h-[1px] bg-white/[0.07] my-1"></div>
+
+        <!-- Section 2: Convert to Linear Document -->
+        <div class="py-2">
+            <div class="px-3.5 py-1.5 text-[12.5px] font-semibold text-zinc-100" data-i18n="exportLinearSection">Convert to a linear document</div>
+            <div class="px-3.5 py-1.5 flex items-center justify-between gap-2">
+                <span class="text-[12px] text-zinc-300" data-i18n="exportIncludeSubboards">Include sub-boards</span>
+                <label class="velmap-switch">
+                    <input type="checkbox" id="export-include-subboards" class="sr-only" onchange="refreshExportZipSize()">
+                    <span class="velmap-switch-track">
+                        <span class="velmap-switch-thumb"></span>
+                    </span>
+                </label>
+            </div>
+            <button type="button" onclick="exportLinearWord()" class="export-menu-item">
+                <svg class="w-4 h-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <rect x="6" y="12.5" width="7" height="6" rx="1" fill="#38bdf8" stroke="none"></rect>
+                    <path d="M7.5 14.3l.9 2.6.9-2 .9 2 .9-2.6" stroke="#18181b" stroke-width="1.2" fill="none"></path>
+                </svg>
+                <span class="truncate" data-i18n="exportWordDoc">Word document</span>
+            </button>
+            <button type="button" onclick="exportLinearMarkdown()" class="export-menu-item">
+                <svg class="w-4 h-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <line x1="10" y1="9" x2="8" y2="9"></line>
+                </svg>
+                <span class="truncate" data-i18n="exportMarkdown">Markdown</span>
+            </button>
+            <button type="button" onclick="exportLinearPlainText()" class="export-menu-item">
+                <svg class="w-4 h-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span class="truncate" data-i18n="exportPlainText">Plain text</span>
+            </button>
+        </div>
+
+        <div class="h-[1px] bg-white/[0.07] my-1"></div>
+
+        <!-- Section 3: Download All Images & Files -->
+        <div class="pt-2 pb-1">
+            <div class="px-3.5 py-1.5 text-[12.5px] font-semibold text-zinc-100" data-i18n="exportZipSection">Download all images and files</div>
+            <button type="button" onclick="exportBoardAssetsZip()" class="export-menu-item">
+                <svg class="w-4 h-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <path d="M9.5 13h5l-5 4h5" stroke-width="1.6"></path>
+                </svg>
+                <span class="truncate"><span data-i18n="exportGenerateZip">Generate ZIP file</span> <span id="export-zip-size" class="text-zinc-400">(0 KB)</span></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- DOCUMENT MODAL -->
+    <div id="document-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center hidden p-2 sm:p-4">
+        <div class="bg-[#141416] border border-borderSubtle rounded-xl w-full max-w-[900px] h-[92dvh] sm:h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="h-12 border-b border-borderSubtle flex items-center justify-between px-3 sm:px-4 shrink-0 bg-[#1c1c1f]">
+                <input type="text" id="doc-title-input" class="bg-transparent text-sm font-semibold text-zinc-100 focus:outline-none flex-1 min-w-0 pr-2" placeholder="Document Title" data-i18n-placeholder="docTitlePlaceholder">
+                <div class="flex items-center gap-2 shrink-0">
+                    <span id="doc-word-count" class="text-[11px] text-zinc-500">0 words</span>
+                    <button type="button" onclick="closeDocumentModal()" class="text-zinc-400 hover:text-zinc-200 p-1.5 rounded hover:bg-[#2a2a2f]"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                </div>
+            </div>
+            <div class="flex-1 flex flex-col sm:flex-row overflow-hidden min-w-0">
+                <!-- Toolbar do Editor -->
+                <div class="w-full h-11 sm:h-auto sm:w-12 border-b sm:border-b-0 sm:border-r border-borderSubtle flex flex-row sm:flex-col items-center px-2 sm:px-0 py-1 sm:py-3 gap-1.5 sm:gap-3 bg-[#1c1c1f] shrink-0 overflow-x-auto sm:overflow-y-auto no-scrollbar">
+                    <button onclick="document.execCommand('bold')" class="p-1.5 text-zinc-400 hover:text-white rounded hover:bg-[#2a2a2f] shrink-0" title="Bold" data-i18n-title="docBold"><span class="text-sm font-bold">B</span></button>
+                    <button onclick="document.execCommand('italic')" class="p-1.5 text-zinc-400 hover:text-white rounded hover:bg-[#2a2a2f] shrink-0" title="Italic" data-i18n-title="docItalic"><span class="text-sm italic font-serif">I</span></button>
+                    <button onclick="document.execCommand('underline')" class="p-1.5 text-zinc-400 hover:text-white rounded hover:bg-[#2a2a2f] shrink-0" title="Underline" data-i18n-title="docUnderline"><span class="text-sm underline">U</span></button>
+                    <div class="w-[1px] h-5 sm:w-6 sm:h-[1px] bg-borderSubtle shrink-0"></div>
+                    <button onclick="document.execCommand('insertUnorderedList')" class="p-1.5 text-zinc-400 hover:text-white rounded hover:bg-[#2a2a2f] shrink-0" title="Bullet List" data-i18n-title="docBulletList"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></button>
+                    <button onclick="document.execCommand('insertOrderedList')" class="p-1.5 text-zinc-400 hover:text-white rounded hover:bg-[#2a2a2f] shrink-0" title="Numbered List" data-i18n-title="docNumberedList"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"></line><line x1="10" y1="12" x2="21" y2="12"></line><line x1="10" y1="18" x2="21" y2="18"></line><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></button>
+                    <button onclick="document.execCommand('formatBlock', false, '<blockquote>')" class="p-1.5 text-zinc-400 hover:text-white rounded hover:bg-[#2a2a2f] shrink-0" title="Quote" data-i18n-title="docQuote"><span class="text-lg leading-none">&rdquo;</span></button>
+                    <div class="w-[1px] h-5 sm:w-6 sm:h-[1px] bg-borderSubtle shrink-0"></div>
+                    <button onclick="promptDocLink()" class="p-1.5 text-zinc-400 hover:text-white rounded hover:bg-[#2a2a2f] shrink-0" title="Link" data-i18n-title="toolLink"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></button>
+                    <button onclick="document.execCommand('removeFormat')" class="p-1.5 text-zinc-400 hover:text-white rounded hover:bg-[#2a2a2f] ml-auto sm:ml-0 sm:mt-auto shrink-0" title="Clear Formatting" data-i18n-title="docClearFormatting"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"></path><path d="M5 20h6"></path><path d="M13 4L8 20"></path><path d="M15 15l6 6"></path><path d="M21 15l-6 6"></path></svg></button>
+                </div>
+                <!-- Área de Escrita -->
+                <div id="doc-editor" contenteditable="true" data-placeholder="Start typing..." data-i18n-placeholder="startTyping" class="md-rich-content flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-8 text-zinc-200 text-sm leading-relaxed focus:outline-none max-w-none break-words"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/65 backdrop-blur-sm z-[250] flex items-center justify-center hidden p-2.5 sm:p-4" onmousedown="if(event.target.id==='settings-modal') closeSettingsModal()">
+        <div class="bg-[#18181b] border border-white/[0.08] rounded-2xl w-full max-w-[520px] max-h-[90dvh] sm:max-h-[88vh] flex flex-col card-shadow overflow-hidden">
+            <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-white/[0.06] flex items-center justify-between shrink-0">
+                <div>
+                    <h3 class="font-semibold text-sm text-zinc-100" data-i18n="settings">Settings</h3>
+                    <p class="text-[11px] text-zinc-500 mt-0.5" data-i18n="settingsSubtitle">Language, profile, local storage &amp; workspace data</p>
+                </div>
+                <button type="button" onclick="closeSettingsModal()" class="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6">
+                <!-- LANGUAGE -->
+                <section class="space-y-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500" data-i18n="languageSection">Language</div>
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3.5 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-xs font-medium text-zinc-200" data-i18n="interfaceLanguage">Interface Language</div>
+                            <div class="text-[11px] text-zinc-500" data-i18n="interfaceLanguageDesc">Switch menus, labels, and notifications</div>
+                        </div>
+                        <div class="flex items-center bg-[#141416] border border-white/[0.08] rounded-lg p-0.5 shrink-0">
+                            <button type="button" id="lang-btn-en" onclick="setLanguage('en')" class="px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors">English</button>
+                            <button type="button" id="lang-btn-pt" onclick="setLanguage('pt-BR')" class="px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors">PT-BR</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SOUND -->
+                <section class="space-y-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500" data-i18n="soundSection">Sound</div>
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3.5 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-xs font-medium text-zinc-200" data-i18n="cozySoundsTitle">Cozy Sound Effects</div>
+                            <div class="text-[11px] text-zinc-500" data-i18n="cozySoundsDesc">Subtle tactile chimes for tasks, drops, and unsorted</div>
+                        </div>
+                        <label class="velmap-switch" title="Cozy Sound Effects" data-i18n-title="cozySoundsTitle">
+                            <input type="checkbox" id="settings-sounds-toggle" class="sr-only" onchange="setSoundsEnabled(this.checked)">
+                            <span class="velmap-switch-track">
+                                <span class="velmap-switch-thumb"></span>
+                            </span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- PROFILE -->
+                <section class="space-y-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500" data-i18n="profileSection">Profile</div>
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-4 space-y-4">
+                        <div class="flex items-center space-x-3.5">
+                            <button type="button" onclick="triggerPfpUpload()" class="relative group w-14 h-14 rounded-full shrink-0 focus:outline-none" title="Change profile photo" data-i18n-title="changePfpTitle">
+                                <div id="settings-avatar-preview" class="w-14 h-14 rounded-full text-white font-semibold text-base flex items-center justify-center border border-white/10 overflow-hidden" style="background-color:#4f6b8a">U</div>
+                                <div class="absolute inset-0 rounded-full bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                        <circle cx="12" cy="13" r="4"></circle>
+                                    </svg>
+                                </div>
+                            </button>
+                            <div class="flex-1 min-w-0 space-y-2">
+                                <div>
+                                    <label for="settings-user-name-input" class="block text-[11px] text-zinc-400 mb-1" data-i18n="displayName">Display Name</label>
+                                    <input type="text" id="settings-user-name-input" maxlength="40" placeholder="Your name..." data-i18n-placeholder="yourNamePlaceholder" oninput="setProfileName(this.value)" class="w-full bg-[#141416] text-xs text-zinc-100 px-3 py-2 rounded-lg border border-white/[0.08] focus:outline-none focus:border-white/25 transition-colors">
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" onclick="triggerPfpUpload()" class="px-2.5 py-1 rounded-md text-[11px] font-medium bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 border border-white/[0.08] transition-colors" data-i18n="uploadPhoto">Upload Photo</button>
+                                    <button type="button" id="btn-remove-pfp" onclick="removeUserPfp()" class="hidden px-2.5 py-1 rounded-md text-[11px] text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors" data-i18n="removePhoto">Remove Photo</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-[11px] text-zinc-400" data-i18n="fallbackAccent">Profile &amp; Avatar Color</span>
+                            <div class="flex items-center space-x-2" id="settings-color-options">
+                                <button type="button" onclick="setProfileColor('#52525b')" data-color="#52525b" class="w-5 h-5 rounded-full bg-[#52525b] border border-white/20 hover:scale-110 transition-transform" title="Zinc"></button>
+                                <button type="button" onclick="setProfileColor('#4f6b8a')" data-color="#4f6b8a" class="w-5 h-5 rounded-full bg-[#4f6b8a] border border-white/20 hover:scale-110 transition-transform" title="Steel Blue"></button>
+                                <button type="button" onclick="setProfileColor('#4f8a5f')" data-color="#4f8a5f" class="w-5 h-5 rounded-full bg-[#4f8a5f] border border-white/20 hover:scale-110 transition-transform" title="Sage Green"></button>
+                                <button type="button" onclick="setProfileColor('#8a7d4f')" data-color="#8a7d4f" class="w-5 h-5 rounded-full bg-[#8a7d4f] border border-white/20 hover:scale-110 transition-transform" title="Muted Amber"></button>
+                                <button type="button" onclick="setProfileColor('#8a4f4f')" data-color="#8a4f4f" class="w-5 h-5 rounded-full bg-[#8a4f4f] border border-white/20 hover:scale-110 transition-transform" title="Muted Rose"></button>
+                                <button type="button" onclick="setProfileColor('#6b538c')" data-color="#6b538c" class="w-5 h-5 rounded-full bg-[#6b538c] border border-white/20 hover:scale-110 transition-transform" title="Muted Plum"></button>
+                                <label id="settings-custom-color-label" class="relative w-5 h-5 rounded-full border border-white/25 overflow-hidden cursor-pointer hover:scale-110 transition-transform flex items-center justify-center bg-[#27272a]" title="Custom Color">
+                                    <input type="color" id="settings-custom-color-input" value="#4f6b8a" oninput="setProfileColor(this.value)" onchange="setProfileColor(this.value)" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer">
+                                    <svg class="w-3 h-3 text-zinc-200 pointer-events-none drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- STORAGE & CONTENTS -->
+                <section class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500" data-i18n="storageSection">Storage &amp; Contents</span>
+                        <span id="storage-total-label" class="text-xs font-medium text-zinc-300" data-i18n="calculating">Calculating...</span>
+                    </div>
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-4 space-y-4">
+                        <div>
+                            <div class="w-full h-2 rounded-full bg-white/[0.06] overflow-hidden flex" id="storage-progress-bar"></div>
+                            <div class="flex items-center justify-between mt-2 text-[11px] text-zinc-500">
+                                <span id="storage-items-summary">0 items stored locally</span>
+                                <span id="storage-quota-label"></span>
+                            </div>
+                        </div>
+                        <div id="storage-breakdown-list" class="divide-y divide-white/[0.05] text-xs"></div>
+                    </div>
+                </section>
+
+                <!-- DEVICE SYNC -->
+                <section class="space-y-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500" data-i18n="deviceSyncSection">Device-to-Device Sync</div>
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-4 flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-xs font-medium text-zinc-200" data-i18n="syncAcrossDevices">Sync Across Devices</div>
+                            <div class="text-[11px] text-zinc-500" id="settings-sync-status">Direct peer-to-peer (no server) or via .velmap file</div>
+                        </div>
+                        <button type="button" onclick="closeSettingsModal(); openSyncModal();" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.07] hover:bg-white/[0.12] text-zinc-100 border border-white/[0.08] transition-colors shrink-0" data-i18n="openSyncBtn">Open Sync</button>
+                    </div>
+                </section>
+
+                <!-- PWA / APP INSTALL -->
+                <section id="settings-pwa-section" class="space-y-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500" data-i18n="pwaSectionTitle">App &amp; Offline (PWA)</div>
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-4 flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <div class="text-xs font-medium text-zinc-200" data-i18n="pwaInstallAppTitle">Install Velmap App</div>
+                            <div id="settings-pwa-desc" class="text-[11px] text-zinc-500 mt-0.5" data-i18n="pwaInstallBrowserHint">Use your browser menu ("Install app" or "Add to Home Screen") to install.</div>
+                        </div>
+                        <button type="button" id="settings-pwa-install-btn" onclick="triggerPwaInstall()" class="hidden px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-900 transition-colors shrink-0" data-i18n="pwaInstallBtn">Install</button>
+                        <span id="settings-pwa-installed-badge" class="hidden px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 shrink-0" data-i18n="pwaInstalledBadge">Installed</span>
+                    </div>
+                </section>
+
+                <!-- CLEAR OPTIONS -->
+                <section class="space-y-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-zinc-500" data-i18n="cleanupSection">Cleanup</div>
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl divide-y divide-white/[0.05] overflow-hidden">
+                        <div class="p-3.5 flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-xs font-medium text-zinc-200" data-i18n="emptyTrashTitle">Empty Trash</div>
+                                <div class="text-[11px] text-zinc-500" id="clear-trash-subtitle">Permanently delete trashed cards</div>
+                            </div>
+                            <button type="button" onclick="requestClearAction('trash')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.05] hover:bg-white/[0.1] text-zinc-300 border border-white/[0.06] transition-colors shrink-0" data-i18n="emptyBtn">Empty</button>
+                        </div>
+                        <div class="p-3.5 flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-xs font-medium text-zinc-200" data-i18n="clearUnsortedTitle">Clear Unsorted</div>
+                                <div class="text-[11px] text-zinc-500" id="clear-unsorted-subtitle">Remove all cards in the Unsorted drawer</div>
+                            </div>
+                            <button type="button" onclick="requestClearAction('unsorted')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.05] hover:bg-white/[0.1] text-zinc-300 border border-white/[0.06] transition-colors shrink-0" data-i18n="clearBtn">Clear</button>
+                        </div>
+                        <div class="p-3.5 space-y-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-xs font-medium text-red-400" data-i18n="clearAllTitle">Clear All App Data</div>
+                                    <div class="text-[11px] text-zinc-500" data-i18n="clearAllDesc">Delete all boards, cards, images, and connections</div>
+                                </div>
+                                <button type="button" id="btn-clear-all-trigger" onclick="requestClearAction('all')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors shrink-0" data-i18n="resetAppBtn">Reset App</button>
+                            </div>
+                            <div id="clear-confirm-bar" class="hidden bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center justify-between gap-2">
+                                <span id="clear-confirm-text" class="text-[11px] text-red-300" data-i18n="areYouSure">Are you sure? This cannot be undone.</span>
+                                <div class="flex items-center space-x-2 shrink-0">
+                                    <button type="button" onclick="cancelClearAction()" class="px-2.5 py-1 rounded text-[11px] text-zinc-300 hover:bg-white/[0.08] transition-colors" data-i18n="cancel">Cancel</button>
+                                    <button type="button" onclick="executeClearAction()" class="px-2.5 py-1 rounded text-[11px] font-medium bg-red-500 hover:bg-red-600 text-white transition-colors" data-i18n="confirm">Confirm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- PFP CROP MODAL -->
+    <div id="pfp-crop-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[280] flex items-center justify-center hidden p-4" onmousedown="if(event.target.id==='pfp-crop-modal') closePfpCropModal()">
+        <div class="bg-[#18181b] border border-white/[0.08] rounded-2xl w-full max-w-[360px] flex flex-col card-shadow overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-white/[0.06] flex items-center justify-between">
+                <div>
+                    <h3 class="font-semibold text-sm text-zinc-100" data-i18n="cropPfpTitle">Crop Profile Photo</h3>
+                    <p class="text-[11px] text-zinc-500" data-i18n="cropPfpSubtitle">Drag to reposition, slider to zoom</p>
+                </div>
+                <button type="button" onclick="closePfpCropModal()" class="text-zinc-400 hover:text-zinc-200 p-1 rounded-lg hover:bg-white/[0.06] transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <div class="p-5 flex flex-col items-center space-y-4">
+                <div id="pfp-crop-stage" class="relative w-[260px] h-[260px] rounded-xl bg-[#111113] overflow-hidden border border-white/[0.08] cursor-grab active:cursor-grabbing select-none touch-none">
+                    <canvas id="pfp-crop-canvas" width="260" height="260" class="w-full h-full block"></canvas>
+                    <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                        <div class="w-[220px] h-[220px] rounded-full border-2 border-white/80 shadow-[0_0_0_9999px_rgba(12,12,15,0.68)]"></div>
+                    </div>
+                </div>
+
+                <div class="w-full flex items-center space-x-3">
+                    <svg class="w-3.5 h-3.5 text-zinc-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                    <input type="range" id="pfp-crop-zoom" min="1" max="3" step="0.01" value="1" oninput="onPfpCropZoomChange(this.value)" class="flex-1 accent-zinc-200 h-1.5 bg-white/10 rounded-lg cursor-pointer">
+                    <svg class="w-4 h-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                    <button type="button" onclick="resetPfpCrop()" class="text-[11px] text-zinc-400 hover:text-zinc-200 px-1.5 py-0.5 rounded hover:bg-white/[0.06] transition-colors" data-i18n="reset">Reset</button>
+                </div>
+            </div>
+
+            <div class="px-5 py-3.5 border-t border-white/[0.06] flex items-center justify-end space-x-2 bg-white/[0.015]">
+                <button type="button" onclick="closePfpCropModal()" class="px-3 py-1.5 rounded-lg text-xs text-zinc-300 hover:bg-white/[0.06] transition-colors" data-i18n="cancel">Cancel</button>
+                <button type="button" onclick="applyPfpCrop()" class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-900 transition-colors" data-i18n="applyPhoto">Apply Photo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SYNC MODAL (P2P & LOCAL FILE - ZERO SERVER) -->
+    <div id="sync-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[260] flex items-center justify-center hidden p-2.5 sm:p-4" onmousedown="if(event.target.id==='sync-modal') closeSyncModal()">
+        <div class="bg-[#18181b] border border-white/[0.08] rounded-2xl w-full max-w-[560px] max-h-[92dvh] sm:max-h-[90vh] flex flex-col card-shadow overflow-hidden">
+            <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-white/[0.06] flex items-center justify-between gap-2 shrink-0">
+                <div class="min-w-0">
+                    <h3 class="font-semibold text-sm text-zinc-100" data-i18n="syncModalTitle">Velmap Sync — Device to Device</h3>
+                    <p class="text-[11px] text-zinc-500 mt-0.5" data-i18n="syncModalSubtitle">100% serverless: your data stays only on your devices</p>
+                </div>
+                <div class="flex items-center space-x-1.5 shrink-0">
+                    <button type="button" onclick="toggleLanguage()" id="sync-lang-toggle" class="px-2 py-1 rounded-md text-[10px] font-semibold bg-white/[0.05] hover:bg-white/[0.1] text-zinc-300 border border-white/[0.08] transition-colors">EN / PT</button>
+                    <button type="button" onclick="closeSyncModal()" class="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-3.5 sm:px-5 pt-3 border-b border-white/[0.06] flex flex-wrap items-center justify-between gap-2 shrink-0 bg-white/[0.015]">
+                <div class="flex items-center space-x-1">
+                    <button type="button" id="sync-tab-p2p" onclick="switchSyncTab('p2p')" class="px-2.5 sm:px-3 py-2 text-xs font-medium text-zinc-100 border-b-2 border-zinc-100" data-i18n="syncTabP2P">Direct P2P (WebRTC)</button>
+                    <button type="button" id="sync-tab-file" onclick="switchSyncTab('file')" class="px-2.5 sm:px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 border-b-2 border-transparent" data-i18n="syncTabFile">File / Syncthing</button>
+                </div>
+                <div id="sync-connection-pill" class="text-[11px] text-zinc-400 flex items-center space-x-1.5 pb-2">
+                    <span id="sync-modal-dot" class="w-2 h-2 rounded-full bg-zinc-500"></span>
+                    <span id="sync-modal-status">Offline (Local)</span>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-3.5 sm:p-5 space-y-5">
+                <!-- CONNECTED BANNER -->
+                <div id="p2p-connected-panel" class="hidden bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3.5 sm:p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <div class="text-xs font-semibold text-emerald-300" data-i18n="p2pConnectedTitle">Connected directly to another device</div>
+                            <div class="text-[11px] text-emerald-200/70 mt-0.5" id="p2p-last-sync-label" data-i18n="p2pConnectedDesc">Changes sync automatically in real time.</div>
+                        </div>
+                        <div class="flex items-center space-x-2 shrink-0">
+                            <button type="button" onclick="sendP2PSnapshot(true)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/30 transition-colors" data-i18n="syncNow">Sync Now</button>
+                            <button type="button" onclick="disconnectP2P()" class="px-2.5 py-1.5 rounded-lg text-[11px] text-zinc-300 hover:bg-white/[0.08] border border-white/[0.08] transition-colors" data-i18n="disconnect">Disconnect</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P2P PANEL -->
+                <div id="sync-panel-p2p" class="space-y-4">
+                    <!-- THIS DEVICE & MAIN MACHINE ROLE -->
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3.5 sm:p-4 space-y-2.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400" data-i18n="thisDeviceLabel">This Device</span>
+                            <div class="flex items-center gap-1.5">
+                                <span id="sync-primary-badge" class="hidden px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/25" data-i18n="mainMachineBadge">Main Machine</span>
+                                <button type="button" id="btn-toggle-primary-machine" onclick="togglePrimaryMachine()" class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 border border-white/[0.08] transition-colors" data-i18n="setMainMachineBtn">Set as Main Machine</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="sync-device-name-input" maxlength="36" onchange="updateLocalDeviceName(this.value)" placeholder="Device name..." data-i18n-placeholder="deviceNamePlaceholder" class="flex-1 min-w-0 bg-[#131316] text-xs text-zinc-100 px-2.5 py-1.5 rounded-lg border border-white/[0.08] focus:outline-none focus:border-white/25">
+                            <span id="sync-device-platform-pill" class="px-2 py-1 rounded-md text-[10px] font-medium bg-white/[0.04] text-zinc-400 border border-white/[0.06] uppercase shrink-0">PC</span>
+                        </div>
+                    </div>
+
+                    <!-- SAVED & SYNCED DEVICES (PERSISTENT - NO REPEATED INVITES) -->
+                    <div id="sync-saved-devices-section" class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3.5 sm:p-4 space-y-2.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="text-xs font-semibold text-zinc-200" data-i18n="savedDevicesTitle">Synced Devices</div>
+                            <span id="sync-saved-count" class="text-[10px] text-zinc-500 font-medium">0</span>
+                        </div>
+                        <div id="sync-saved-devices-list" class="space-y-2"></div>
+                    </div>
+
+                    <!-- ONE-TIME PAIRING CODE -->
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3.5 sm:p-4 space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="text-xs font-semibold text-zinc-200" data-i18n="pairOnceTitle">Pair a New Device (One-Time)</div>
+                                <div class="text-[11px] text-zinc-500 mt-0.5" data-i18n="pairOnceDesc">Pair once via short code. Future visits reconnect automatically without new invites.</div>
+                            </div>
+                            <button type="button" onclick="createPairRoomCode()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-900 transition-colors shrink-0" data-i18n="createPairCodeBtn">New Code</button>
+                        </div>
+
+                        <div id="sync-pair-code-box" class="hidden pt-2 border-t border-white/[0.06] space-y-2">
+                            <div class="flex items-center justify-between gap-2 bg-[#131316] border border-white/[0.08] rounded-lg px-3 py-2">
+                                <div>
+                                    <div class="text-[10px] text-zinc-500 uppercase tracking-wider" data-i18n="pairCodeLabel">Enter this code on the other device</div>
+                                    <div id="sync-pair-code-display" class="text-base font-mono font-semibold tracking-widest text-zinc-100 mt-0.5">VM-0000</div>
+                                </div>
+                                <button type="button" onclick="copyPairCodeText()" class="px-2.5 py-1.5 rounded-lg text-[11px] bg-white/[0.07] hover:bg-white/[0.12] text-zinc-200 border border-white/[0.08] shrink-0" data-i18n="copy">Copy</button>
+                            </div>
+                            <div id="sync-pair-waiting-hint" class="text-[11px] text-zinc-400" data-i18n="pairingWaitingStatus">Waiting for your other device to enter this code...</div>
+                        </div>
+
+                        <div class="flex flex-wrap sm:flex-nowrap gap-2 pt-1 border-t border-white/[0.05]">
+                            <input type="text" id="sync-join-pair-input" maxlength="16" placeholder="Code (e.g. VM-48K9)" data-i18n-placeholder="enterPairCodePlaceholder" onkeydown="if(event.key==='Enter') joinPairRoomCode()" class="flex-1 min-w-[140px] bg-[#131316] text-xs font-mono uppercase text-zinc-200 px-2.5 py-1.5 rounded-lg border border-white/[0.08] focus:outline-none focus:border-white/25">
+                            <button type="button" onclick="joinPairRoomCode()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-colors shrink-0" data-i18n="pairConnectBtn">Pair Device</button>
+                        </div>
+                    </div>
+
+                    <!-- MANUAL / OFFLINE QR PAIRING FALLBACK -->
+                    <details id="sync-manual-qr-details" class="bg-white/[0.015] border border-white/[0.05] rounded-xl overflow-hidden">
+                        <summary class="px-3.5 py-2.5 text-[11px] font-medium text-zinc-400 hover:text-zinc-200 cursor-pointer select-none flex items-center justify-between" data-i18n="manualQrSummary">
+                            Manual QR / Offline Invite (VM1 &amp; VM2 Fallback)
+                        </summary>
+                        <div class="p-3.5 pt-2 space-y-3 border-t border-white/[0.05]">
+                            <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3 space-y-3">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div>
+                                        <div class="text-xs font-semibold text-zinc-200" data-i18n="p2pStep1Title">1. Start on this device (Create Invite)</div>
+                                        <div class="text-[11px] text-zinc-500" data-i18n="p2pStep1Desc">Use on either device to initiate the connection</div>
+                                    </div>
+                                    <button type="button" onclick="startP2PHost()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-900 transition-colors shrink-0" data-i18n="createInvite">Create Invite</button>
+                                </div>
+
+                                <div id="p2p-host-box" class="hidden space-y-3 pt-2 border-t border-white/[0.06]">
+                                    <div class="flex flex-col sm:flex-row gap-3 items-center">
+                                        <div id="p2p-offer-qr" class="bg-white p-2 rounded-lg shrink-0 hidden"></div>
+                                        <div class="flex-1 w-full space-y-2">
+                                            <label class="block text-[11px] text-zinc-400" data-i18n="p2pOfferLabel">Send this code (or QR) to your other device:</label>
+                                            <div class="flex gap-2">
+                                                <input type="text" id="p2p-offer-output" readonly class="flex-1 min-w-0 bg-[#131316] text-[11px] font-mono text-zinc-300 px-2.5 py-1.5 rounded-lg border border-white/[0.08] focus:outline-none">
+                                                <button type="button" onclick="copySyncText('p2p-offer-output')" class="px-2.5 py-1.5 rounded-lg text-[11px] bg-white/[0.07] hover:bg-white/[0.12] text-zinc-200 border border-white/[0.08] shrink-0" data-i18n="copy">Copy</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1.5 pt-2 border-t border-white/[0.05]">
+                                        <label class="block text-[11px] text-zinc-400" data-i18n-html="p2pAnswerInputLabel">Paste the Answer code (<code class="text-zinc-300">VM2:...</code>) generated by the other device:</label>
+                                        <div class="flex flex-wrap sm:flex-nowrap gap-2">
+                                            <input type="text" id="p2p-answer-input" placeholder="Paste VM2:... here" data-i18n-placeholder="pasteVm2Placeholder" class="flex-1 min-w-[140px] bg-[#131316] text-[11px] font-mono text-zinc-200 px-2.5 py-1.5 rounded-lg border border-white/[0.08] focus:outline-none focus:border-white/25">
+                                            <button type="button" id="btn-scan-answer-qr" onclick="startQrScanner('p2p-answer-input')" class="hidden px-2.5 py-1.5 rounded-lg text-[11px] bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 border border-white/[0.08] shrink-0" data-i18n="scanQr">Scan QR</button>
+                                            <button type="button" onclick="acceptP2PAnswer()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-colors shrink-0" data-i18n="connect">Connect</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3 space-y-3">
+                                <div>
+                                    <div class="text-xs font-semibold text-zinc-200" data-i18n="p2pStep2Title">2. Join with an Invite from another device</div>
+                                    <div class="text-[11px] text-zinc-500" data-i18n-html="p2pStep2Desc">Paste the <code class="text-zinc-400">VM1:...</code> code (or scan the QR) to generate an answer</div>
+                                </div>
+                                <div class="flex flex-wrap sm:flex-nowrap gap-2">
+                                    <input type="text" id="p2p-remote-offer-input" placeholder="Paste VM1:... here" data-i18n-placeholder="pasteVm1Placeholder" class="flex-1 min-w-[140px] bg-[#131316] text-[11px] font-mono text-zinc-200 px-2.5 py-1.5 rounded-lg border border-white/[0.08] focus:outline-none focus:border-white/25">
+                                    <button type="button" id="btn-scan-offer-qr" onclick="startQrScanner('p2p-remote-offer-input')" class="hidden px-2.5 py-1.5 rounded-lg text-[11px] bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 border border-white/[0.08] shrink-0" data-i18n="scanQr">Scan QR</button>
+                                    <button type="button" onclick="acceptP2POffer()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.08] hover:bg-white/[0.14] text-zinc-100 border border-white/[0.08] transition-colors shrink-0" data-i18n="createAnswer">Create Answer</button>
+                                </div>
+
+                                <div id="p2p-join-box" class="hidden space-y-2 pt-2 border-t border-white/[0.06]">
+                                    <div class="flex flex-col sm:flex-row gap-3 items-center">
+                                        <div id="p2p-answer-qr" class="bg-white p-2 rounded-lg shrink-0 hidden"></div>
+                                        <div class="flex-1 w-full space-y-1.5">
+                                            <label class="block text-[11px] text-zinc-400" data-i18n-html="p2pAnswerOutLabel">Send this Answer (<code class="text-zinc-300">VM2:...</code>) back to Device 1:</label>
+                                            <div class="flex gap-2">
+                                                <input type="text" id="p2p-answer-output" readonly class="flex-1 min-w-0 bg-[#131316] text-[11px] font-mono text-zinc-300 px-2.5 py-1.5 rounded-lg border border-white/[0.08] focus:outline-none">
+                                                <button type="button" onclick="copySyncText('p2p-answer-output')" class="px-2.5 py-1.5 rounded-lg text-[11px] bg-white/[0.07] hover:bg-white/[0.12] text-zinc-200 border border-white/[0.08] shrink-0" data-i18n="copy">Copy</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <!-- CAMERA QR SCANNER OVERLAY -->
+                    <div id="qr-scanner-box" class="hidden bg-[#131316] border border-white/[0.1] rounded-xl p-3 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-medium text-zinc-200" data-i18n="qrScannerTitle">Point camera at the QR Code</span>
+                            <button type="button" onclick="stopQrScanner()" class="text-[11px] text-zinc-400 hover:text-zinc-200 px-2 py-0.5 rounded hover:bg-white/[0.08]" data-i18n="closeCamera">Close camera</button>
+                        </div>
+                        <video id="qr-scanner-video" playsinline autoplay muted class="w-full max-h-56 rounded-lg bg-black object-cover"></video>
+                    </div>
+                </div>
+
+                <!-- FILE / SYNCTHING PANEL -->
+                <div id="sync-panel-file" class="hidden space-y-4">
+                    <div class="text-[11px] text-zinc-400 leading-relaxed bg-white/[0.025] border border-white/[0.06] rounded-xl p-3.5" data-i18n-html="fileSyncIntroHtml">
+                        Ideal for syncing across your devices with <strong class="text-zinc-200">Syncthing</strong>, <strong class="text-zinc-200">LocalSend</strong>, or file sharing: when importing a <code class="text-zinc-300">.velmap</code> file, the app <strong class="text-zinc-200">merges</strong> changes from both devices while keeping the latest version of each card.
+                    </div>
+
+                    <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl divide-y divide-white/[0.05] overflow-hidden">
+                        <div class="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <div class="text-xs font-medium text-zinc-200" data-i18n="exportPackageTitle">Export .velmap Package</div>
+                                <div class="text-[11px] text-zinc-500" data-i18n="exportPackageDesc">Saves boards, cards, tasks, connections, images, and profile</div>
+                            </div>
+                            <button type="button" onclick="exportVelmapFile()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-100 hover:bg-white text-zinc-900 transition-colors shrink-0 self-start sm:self-auto" data-i18n="exportBtn">Export</button>
+                        </div>
+                        <div class="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <div class="text-xs font-medium text-zinc-200" data-i18n="importPackageTitle">Import &amp; Merge .velmap</div>
+                                <div class="text-[11px] text-zinc-500" data-i18n="importPackageDesc">Combines the file from another device without erasing local work</div>
+                            </div>
+                            <button type="button" onclick="document.getElementById('velmap-import-input').click()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.07] hover:bg-white/[0.12] text-zinc-200 border border-white/[0.08] transition-colors shrink-0 self-start sm:self-auto" data-i18n="importBtn">Import</button>
+                        </div>
+                    </div>
+
+                    <div id="linked-file-section" class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3.5 sm:p-4 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <div class="text-xs font-medium text-zinc-200" data-i18n="linkedFileTitle">Linked File (Synced Folder / Syncthing)</div>
+                                <div class="text-[11px] text-zinc-500" id="linked-file-name" data-i18n="noLinkedFile">No file linked (supported browsers)</div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                <button type="button" id="btn-reconnect-linked-file" onclick="reconnectPersistedSyncFile()" class="hidden px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-500/30 transition-colors" data-i18n="reconnectFileBtn">Reconnect File</button>
+                                <button type="button" onclick="linkLocalSyncFile()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.07] hover:bg-white/[0.12] text-zinc-200 border border-white/[0.08] transition-colors" data-i18n="linkFileBtn">Link File</button>
+                            </div>
+                        </div>
+                        <div id="linked-file-actions" class="hidden flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
+                            <label class="flex items-center space-x-2 text-[11px] text-zinc-300 cursor-pointer">
+                                <input type="checkbox" id="linked-file-autosave" class="rounded border-zinc-600 bg-transparent" checked>
+                                <span data-i18n="autoSaveFile">Auto-save changes to file</span>
+                            </label>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" onclick="loadFromLinkedSyncFile()" class="px-2.5 py-1 rounded-md text-[11px] bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 border border-white/[0.08]" data-i18n="readAndMerge">Read &amp; Merge</button>
+                                <button type="button" onclick="saveToLinkedSyncFile(true)" class="px-2.5 py-1 rounded-md text-[11px] bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 border border-white/[0.08]" data-i18n="saveNow">Save Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOBILE FLOATING SHEETS BACKDROP -->
+    <div id="mobile-sheet-backdrop" onclick="closeMobileSheets()" class="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-[35] md:hidden hidden"></div>
+
+    <!-- MOBILE FLOATING ADD / TOOLS CARD -->
+    <div id="mobile-tools-sheet" class="hidden md:hidden fixed left-2.5 right-2.5 bottom-[64px] z-40 bg-[#1a1a1e]/98 backdrop-blur-md border border-white/[0.12] rounded-2xl p-3.5 shadow-2xl max-h-[64dvh] overflow-y-auto">
+        <div class="w-10 h-1 rounded-full bg-white/20 mx-auto mb-2.5"></div>
+        <div class="flex items-center justify-between mb-3 px-0.5">
+            <span class="text-xs font-semibold text-zinc-200" data-i18n="mobileNavToolsTitle">Add to board</span>
+            <button type="button" onclick="closeMobileSheets()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <div class="grid grid-cols-4 gap-2">
+            <button type="button" onclick="createCardFromMobileSheet('sticky')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolNote">Note</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('task')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolTodo">To-do</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('subboard')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolBoard">Board</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('column')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolColumn">Column</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('document')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolDoc">Doc</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('link')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolLink">Link</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('table')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolTable">Table</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('comment')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolComment">Comment</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('line')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="5" y1="19" x2="19" y2="5"></line><polyline points="11 5 19 5 19 13"></polyline></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolLine">Line</span>
+            </button>
+            <button type="button" onclick="createCardFromMobileSheet('image')" class="min-h-[60px] rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-[0.97] border border-white/[0.06] flex flex-col items-center justify-center gap-1.5 p-2 text-zinc-200 transition-all">
+                <svg class="w-4 h-4 text-zinc-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <span class="text-[11px] font-medium truncate max-w-full" data-i18n="toolImage">Image</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MOBILE FLOATING MORE MENU CARD -->
+    <div id="mobile-more-sheet" class="hidden md:hidden fixed left-2.5 right-2.5 bottom-[64px] z-40 bg-[#1a1a1e]/98 backdrop-blur-md border border-white/[0.12] rounded-2xl p-3.5 shadow-2xl max-h-[68dvh] overflow-y-auto space-y-3">
+        <div class="w-10 h-1 rounded-full bg-white/20 mx-auto"></div>
+        <div class="flex items-center justify-between px-0.5">
+            <span class="text-xs font-semibold text-zinc-200" data-i18n="mobileMoreTitle">Workspace &amp; View</span>
+            <button type="button" onclick="closeMobileSheets()" class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+
+        <!-- Zoom Row -->
+        <div class="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2">
+            <span class="text-xs font-medium text-zinc-300" data-i18n="zoomLabel">Zoom</span>
+            <div class="flex items-center gap-1.5">
+                <button type="button" onclick="zoomOut()" class="w-9 h-9 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-zinc-200 flex items-center justify-center" title="Zoom Out" data-i18n-title="zoomOut">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+                <button type="button" id="mobile-zoom-level" onclick="resetZoom()" class="min-w-[54px] h-9 px-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-xs font-medium text-zinc-100 tabular-nums">100%</button>
+                <button type="button" onclick="zoomIn()" class="w-9 h-9 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-zinc-200 flex items-center justify-center" title="Zoom In" data-i18n-title="zoomIn">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="closeMobileSheets(); toggleHomeView()" class="min-h-[46px] px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.06] flex items-center gap-2.5 text-xs font-medium text-zinc-200 text-left">
+                <svg class="w-4 h-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="truncate" data-i18n="areasHomeLabel">Areas &amp; Boards</span>
+            </button>
+            <button type="button" onclick="closeMobileSheets(); openBoardBgPopover()" class="min-h-[46px] px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.06] flex items-center gap-2.5 text-xs font-medium text-zinc-200 text-left">
+                <svg class="w-4 h-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+                <span class="truncate" data-i18n="boardBgTitle">Board Background</span>
+            </button>
+            <button type="button" onclick="closeMobileSheets(); openSyncModal()" class="min-h-[46px] px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.06] flex items-center gap-2.5 text-xs font-medium text-zinc-200 text-left">
+                <span id="mobile-sync-dot" class="w-2.5 h-2.5 rounded-full bg-zinc-500 shrink-0"></span>
+                <span class="truncate" data-i18n="syncBtn">Sync</span>
+            </button>
+            <button type="button" onclick="closeMobileSheets(); openSettingsModal()" class="min-h-[46px] px-3 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.06] flex items-center gap-2.5 text-xs font-medium text-zinc-200 text-left">
+                <svg class="w-4 h-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span class="truncate" data-i18n="settings">Settings</span>
+            </button>
+        </div>
+
+        <button type="button" id="mobile-pwa-install-btn" onclick="closeMobileSheets(); triggerPwaInstall()" class="hidden w-full min-h-[44px] px-3 py-2.5 rounded-xl bg-zinc-100 hover:bg-white text-zinc-900 text-xs font-semibold items-center justify-center gap-2 transition-colors">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="7" x2="12" y2="14"></line><polyline points="9 11 12 14 15 11"></polyline></svg>
+            <span data-i18n="pwaInstallAppTitle">Install Velmap App</span>
+        </button>
+    </div>
+
+    <!-- MOBILE BOTTOM NAVBAR -->
+    <nav id="mobile-bottom-nav" class="fixed bottom-0 left-0 right-0 h-14 bg-[#18181b]/95 backdrop-blur-md border-t border-white/[0.08] grid grid-cols-5 items-center px-1 z-30 md:hidden">
+        <button type="button" id="mobile-nav-add" onclick="toggleMobileToolsSheet()" class="h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-zinc-300 hover:text-white active:bg-white/[0.08] transition-colors">
+            <svg class="w-[19px] h-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span class="text-[10px] font-medium leading-none" data-i18n="mobileNavAdd">Add</span>
+        </button>
+
+        <button type="button" id="mobile-nav-mode" onclick="setTool(activeTool === 'select' ? 'hand' : 'select')" class="h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-zinc-300 hover:text-white active:bg-white/[0.08] transition-colors">
+            <svg id="mobile-nav-mode-icon" class="w-[19px] h-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="M13 13l6 6"></path></svg>
+            <span id="mobile-nav-mode-label" class="text-[10px] font-medium leading-none" data-i18n="toolSelect">Select</span>
+        </button>
+
+        <button type="button" id="mobile-nav-unsorted" onclick="closeMobileSheets(); toggleSidebar()" class="relative h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-zinc-400 hover:text-white active:bg-white/[0.08] transition-colors">
+            <svg class="w-[19px] h-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M15 3v18"></path></svg>
+            <span class="text-[10px] font-medium leading-none truncate max-w-[60px]" data-i18n="unsorted">Unsorted</span>
+            <span id="mobile-unsorted-count" class="hidden absolute top-1 right-2.5 bg-zinc-700 text-zinc-100 text-[9px] rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center font-semibold">0</span>
+        </button>
+
+        <button type="button" id="mobile-trash-btn" onclick="closeMobileSheets(); handleGlobalTrashClick()" class="relative h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-zinc-400 hover:text-white active:bg-white/[0.08] transition-colors">
+            <svg class="w-[19px] h-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span class="text-[10px] font-medium leading-none" data-i18n="trash">Trash</span>
+            <span id="mobile-trash-badge" class="hidden absolute top-1 right-2.5 bg-zinc-700 text-zinc-100 text-[9px] rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center font-semibold">0</span>
+        </button>
+
+        <button type="button" id="mobile-nav-more" onclick="toggleMobileMoreSheet()" class="h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 text-zinc-400 hover:text-white active:bg-white/[0.08] transition-colors">
+            <svg class="w-[19px] h-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle><circle cx="5" cy="12" r="1.5"></circle></svg>
+            <span class="text-[10px] font-medium leading-none" data-i18n="mobileNavMore">More</span>
+        </button>
+    </nav>
+
+    <!-- OFFLINE STATUS INDICATOR -->
+    <div id="offline-indicator" class="hidden fixed bottom-[64px] left-3 md:bottom-3 md:left-20 bg-amber-500/15 border border-amber-500/35 text-amber-200 px-3 py-1.5 rounded-lg shadow-xl z-[290] items-center space-x-2 text-[11px] font-medium backdrop-blur-md pointer-events-none">
+        <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+        <span data-i18n="offlineModeLabel">Offline Mode — Local data active</span>
+    </div>
+
+    <!-- iOS SAFARI PWA INSTALL GUIDE MODAL -->
+    <div id="ios-pwa-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[295] flex items-center justify-center hidden p-4" onmousedown="if(event.target.id==='ios-pwa-modal') closeIosPwaGuide()">
+        <div class="bg-[#18181b] border border-white/[0.1] rounded-2xl w-full max-w-[340px] p-5 card-shadow space-y-3">
+            <h3 class="text-sm font-semibold text-zinc-100" data-i18n="pwaIosTitle">Install on iPhone / iPad</h3>
+            <p class="text-xs text-zinc-400 leading-relaxed" data-i18n-html="pwaIosDesc">1. Tap the Share button in Safari's toolbar.<br>2. Scroll down and tap Add to Home Screen.</p>
+            <button type="button" onclick="closeIosPwaGuide()" class="w-full py-2 rounded-lg text-xs font-medium bg-white/[0.08] hover:bg-white/[0.14] text-zinc-100 border border-white/[0.08] transition-colors" data-i18n="pwaIosClose">Close</button>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-[66px] right-3 md:bottom-5 md:right-5 max-w-[calc(100vw-1.5rem)] bg-[#1d1d20] border border-white/[0.08] text-zinc-200 px-3.5 py-2.5 rounded-lg shadow-xl z-[300] transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-2.5 text-xs pointer-events-none">
+        <svg class="w-4 h-4 text-zinc-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span id="toast-msg" class="truncate">Done</span>
+    </div>
+
+    <!-- Hidden File Inputs -->
+    <input type="file" id="image-file-input" accept="image/*,video/*" multiple class="hidden" onchange="handleFileInput(event)">
+    <input type="file" id="icon-file-input" accept="image/*" class="hidden">
+    <input type="file" id="pfp-file-input" accept="image/*" class="hidden" onchange="handlePfpFileSelect(event)">
+    <input type="file" id="velmap-import-input" accept=".velmap,.json" class="hidden" onchange="importVelmapFile(event)">
+
+    <script src="./js/i18n.js"></script>
+    <script src="./js/db-state.js"></script>
+    <script src="./js/ui-history.js"></script>
+    <script src="./js/context-toolbar.js"></script>
+    <script src="./js/connections.js"></script>
+    <script src="./js/board-render.js"></script>
+    <script src="./js/media-links.js"></script>
+    <script src="./js/drag-drop.js"></script>
+    <script src="./js/canvas-interactions.js"></script>
+    <script src="./js/cards-actions.js"></script>
+    <script src="./js/export.js"></script>
+    <script src="./js/settings-profile.js"></script>
+    <script src="./js/sync.js"></script>
+    <script src="./js/pwa.js"></script>
+</body>
+</html>
